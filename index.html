@@ -1,69 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enviar Mensajes a TouchDesigner</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 50px;
-        }
-        textarea {
-            width: 80%;
-            height: 100px;
-            margin-bottom: 20px;
-            font-size: 16px;
-        }
-        button {
-            font-size: 16px;
-            padding: 10px 20px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cliente WebSocket</title>
 </head>
 <body>
-    <h1>Enviar Mensajes dedicados</h1>
-    <textarea id="message" placeholder="Escribe tu mensaje aquí..."></textarea>
-    <br>
-    <button id="sendBtn">Enviar Mensaje</button>
+  <h1>Prueba WebSocket</h1>
+  <p>Estado: <span id="status">Desconectado</span></p>
+  <input type="text" id="messageInput" placeholder="Escribe un mensaje">
+  <button id="sendBtn">Enviar</button>
+  <ul id="messages"></ul>
 
-    <script>
-        // Conectar al servidor WebSocket
-        const socket = new WebSocket('https://socket-server-dromo.onrender.com'); // Reemplaza con tu URL WebSocket
+  <script>
+    const statusEl = document.getElementById("status");
+    const sendBtn = document.getElementById("sendBtn");
+    const messageInput = document.getElementById("messageInput");
+    const messagesList = document.getElementById("messages");
 
-        socket.onopen = () => {
-            console.log('Conectado al servidor WebSocket');
-        };
+    // URL del servidor WebSocket en Render
+    const socket = new WebSocket("wss://tuservidor.onrender.com");
 
-        socket.onerror = (error) => {
-            console.error('Error en la conexión WebSocket:', error);
-        };
+    socket.onopen = () => {
+      statusEl.textContent = "Conectado";
+      console.log("WebSocket conectado");
+    };
 
-        socket.onclose = () => {
-            console.log('Conexión WebSocket cerrada');
-        };
+    socket.onmessage = (event) => {
+      const li = document.createElement("li");
+      li.textContent = `Servidor: ${event.data}`;
+      messagesList.appendChild(li);
+    };
 
-        // Enviar mensaje al hacer clic en el botón
-        document.getElementById('sendBtn').addEventListener('click', () => {
-            const message = document.getElementById('message').value.trim();
-            if (message) {
-                socket.send(message); // Enviar el mensaje al servidor WebSocket
-                console.log('Mensaje enviado:', message);
-                alert('Mensaje enviado: ' + message);
-                document.getElementById('message').value = ''; // Limpiar el campo de texto
-            } else {
-                alert('Por favor, escribe un mensaje antes de enviar.');
-            }
-        });
-    </script>
+    socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+      statusEl.textContent = "Error en la conexión";
+    };
+
+    socket.onclose = () => {
+      statusEl.textContent = "Desconectado";
+      console.log("WebSocket desconectado");
+    };
+
+    sendBtn.addEventListener("click", () => {
+      const message = messageInput.value;
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(message);
+        const li = document.createElement("li");
+        li.textContent = `Tú: ${message}`;
+        messagesList.appendChild(li);
+        messageInput.value = "";
+      } else {
+        alert("La conexión WebSocket no está abierta.");
+      }
+    });
+  </script>
 </body>
 </html>
