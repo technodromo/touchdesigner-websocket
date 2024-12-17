@@ -19,7 +19,7 @@
     const messagesList = document.getElementById("messages");
 
     // URL del servidor WebSocket en Render
-    const socket = new WebSocket("wss://tuservidor.onrender.com");
+    const socket = new WebSocket("wss://socket-server-dromo-1.onrender.com");
 
     socket.onopen = () => {
       statusEl.textContent = "Conectado";
